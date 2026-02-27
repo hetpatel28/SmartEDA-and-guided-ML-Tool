@@ -27,16 +27,16 @@ Exports fully prepared dataset in CSV format for downstream modeling.
 ### 🤖 Phase 6 – Guided ML Recommendation  
 Automatically detects problem type and suggests appropriate ML models and evaluation metrics.
 
-### 🎯 Phase 7 – Model Training & Prediction *(Upcoming)*  
+### 🎯 Phase 7 – Model Training & Prediction  
 Will train selected models and generate predictions using train-test split.
 
-### 📈 Phase 8 – Model Evaluation *(Upcoming)*  
+### 📈 Phase 8 – Model Evaluation 
 Will compare model performance using metrics and cross-validation.
 
-### 💡 Phase 9 – Model Explainability *(Upcoming)*  
+### 💡 Phase 9 – Model Explainability
 Will provide feature importance and interpretation support.
 
-### 📋 Phase 10 – Final Report Generation *(Upcoming)*  
+### 📋 Phase 10 – Final Report Generation  
 Will generate a structured ML summary report for project documentation.
 
 ---
@@ -49,7 +49,7 @@ Modular backend structure with session-based state management, dataset versionin
 
 ## 🛠 Technologies Used
 
-Python, Pandas, NumPy, Scikit-learn, Streamlit, Matplotlib, Seaborn
+Python, Pandas, NumPy, Scikit-learn, Streamlit, Matplotlib, Seaborn, Ydata-profiling, xgboost, reportLab
 
 ---
 
