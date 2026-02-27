@@ -610,6 +610,10 @@ def render_pattern_discovery():
 # ----------------------------
 def render_feature_engineering():
 
+    # if not isinstance(st.session_state.df, pd.DataFrame):
+    #     st.error("Dataset corrupted. Please reset to original.")
+    #     return
+
     df = st.session_state.df
 
     st.info(f"Current Data Version: v{st.session_state.data_version}")
@@ -701,21 +705,23 @@ def render_feature_engineering():
 
         numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns
         column = st.selectbox("Select Column", numeric_cols)
-
         method = st.selectbox("Method", ["Log", "Square Root"])
 
         if st.button("Apply Transformation"):
 
-            st.session_state.df_history.append(df.copy())
-            st.session_state.redo_stack.clear()
+            df_new, changed = transform_skew(df.copy(), column, method)
 
-            df = transform_skew(df, column, method)
-            st.session_state.df = df
+            if changed:
+                st.session_state.df_history.append(df.copy())
+                st.session_state.redo_stack.clear()
 
-            st.session_state.data_version += 1
-            log_action(f"Applied {method} transform on '{column}'")
+                st.session_state.df = df_new
+                st.session_state.data_version += 1
+                log_action(f"Applied {method} transform on '{column}'")
 
-            st.success("Transformation applied.")
+                st.success("Transformation applied.")
+            else:
+                st.info("No transformation applied.")
 
     # =====================================================
     # 3️⃣ ENCODING
@@ -724,25 +730,26 @@ def render_feature_engineering():
 
         cat_cols = df.select_dtypes(include=["object", "category"]).columns
         selected = st.multiselect("Select Columns", cat_cols)
-
         method = st.selectbox("Encoding Method", ["Label Encoding", "One-Hot Encoding"])
 
         if st.button("Apply Encoding"):
 
-            st.session_state.df_history.append(df.copy())
-            st.session_state.redo_stack.clear()
-
             if method == "Label Encoding":
-                df = label_encode(df, selected)
+                df_new, changed = label_encode(df.copy(), selected)
             else:
-                df = one_hot_encode(df, selected)
+                df_new, changed = one_hot_encode(df.copy(), selected)
 
-            st.session_state.df = df
+            if changed:
+                st.session_state.df_history.append(df.copy())
+                st.session_state.redo_stack.clear()
 
-            st.session_state.data_version += 1
-            log_action(f"Applied {method}")
+                st.session_state.df = df_new
+                st.session_state.data_version += 1
+                log_action(f"Applied {method}")
 
-            st.success("Encoding applied.")
+                st.success("Encoding applied.")
+            else:
+                st.info("No encoding applied.")
 
     # =====================================================
     # 4️⃣ BINNING
@@ -751,23 +758,24 @@ def render_feature_engineering():
 
         numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns
         column = st.selectbox("Select Column", numeric_cols)
-
         bins = st.number_input("Number of Bins", min_value=2, max_value=20, value=4)
-
         method = st.selectbox("Method", ["Equal Width", "Equal Frequency"])
 
         if st.button("Apply Binning"):
 
-            st.session_state.df_history.append(df.copy())
-            st.session_state.redo_stack.clear()
+            df_new, changed = bin_continuous(df.copy(), column, bins, method)
 
-            df = bin_continuous(df, column, bins, method)
-            st.session_state.df = df
+            if changed:
+                st.session_state.df_history.append(df.copy())
+                st.session_state.redo_stack.clear()
 
-            st.session_state.data_version += 1
-            log_action(f"Binned '{column}' into {bins} bins")
+                st.session_state.df = df_new
+                st.session_state.data_version += 1
+                log_action(f"Binned '{column}' into {bins} bins")
 
-            st.success("Binning applied.")
+                st.success("Binning applied.")
+            else:
+                st.info("Binning not applied (column may already exist).")
 
     # =====================================================
     # 5️⃣ SCALING
@@ -776,21 +784,23 @@ def render_feature_engineering():
 
         numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns
         selected = st.multiselect("Select Columns", numeric_cols)
-
         method = st.selectbox("Scaling Method", ["StandardScaler", "MinMaxScaler"])
 
         if st.button("Apply Scaling"):
 
-            st.session_state.df_history.append(df.copy())
-            st.session_state.redo_stack.clear()
+            df_new, changed = scale_features(df.copy(), selected, method)
 
-            df = scale_features(df, selected, method)
-            st.session_state.df = df
+            if changed:
+                st.session_state.df_history.append(df.copy())
+                st.session_state.redo_stack.clear()
 
-            st.session_state.data_version += 1
-            log_action(f"Applied {method}")
+                st.session_state.df = df_new
+                st.session_state.data_version += 1
+                log_action(f"Applied {method}")
 
-            st.success("Scaling applied.")
+                st.success("Scaling applied.")
+            else:
+                st.info("No scaling applied.")
 
     # =====================================================
     # 6️⃣ REMOVE HIGH CORRELATION
