@@ -46,6 +46,16 @@ if "original_df" not in st.session_state:
 # Version tracking
 if "data_version" not in st.session_state:
     st.session_state.data_version = 1
+if "evaluation_results" not in st.session_state:
+    st.session_state.evaluation_results = None
+if "trained_models" not in st.session_state:
+    st.session_state.trained_models = None
+if "X_test" not in st.session_state:
+    st.session_state.X_test = None
+if "y_test" not in st.session_state:
+    st.session_state.y_test = None
+if "ml_config" not in st.session_state:
+    st.session_state.ml_config = None
 
 def log_action(action_text):
     timestamp = datetime.now().strftime("%H:%M:%S")
@@ -1277,9 +1287,9 @@ def render_final_report():
 
     dataset_name = st.session_state.uploaded_file.name
 
-    if st.button("Generate Enterprise Report"):
+    if st.button("Generate Report"):
 
-        file_path = "SmartEDA_Enterprise_Report.pdf"
+        file_path = "SmartEDA_Report.pdf"
 
         overview = {
             "rows": df.shape[0],
@@ -1301,13 +1311,13 @@ def render_final_report():
 
         with open(file_path, "rb") as f:
             st.download_button(
-                "Download Enterprise Report",
+                "Download Report",
                 f,
-                file_name="SmartEDA_Enterprise_Report.pdf",
+                file_name="SmartEDA_Report.pdf",
                 mime="application/pdf"
             )
 
-        st.success("Enterprise multi-page report generated successfully.")
+        st.success("report generated successfully.")
 
 #-----------------------------------
 # Function to render section content

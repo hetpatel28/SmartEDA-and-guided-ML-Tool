@@ -45,10 +45,10 @@ def handle_missing_values(df, column, method, custom_value=None):
         df[column] = df[column].fillna(df[column].mode()[0])
 
     elif method == "Forward Fill":
-        df[column] = df[column].fillna(method="ffill")
+        df[column] = df[column].ffill()
 
     elif method == "Backward Fill":
-        df[column] = df[column].fillna(method="bfill")
+        df[column] = df[column].bfill()
 
     elif method == "Custom Value":
         df[column] = df[column].fillna(custom_value)
