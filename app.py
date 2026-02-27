@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
 import io
+import time
 
 # Import backend modules
 from backend._1_data_loader import *
@@ -13,9 +14,9 @@ from backend._3_relation import *
 from backend._4_feature_engineering import *
 from backend._6_ml_recommendation import *
 from backend._7_model_training import *
-# from backend._8_evaluation import ()
-# from backend._9_explainability import ()
-# from backend._10_report_generator import ()
+from backend._8_evaluation import *
+from backend._9_explainability import *
+from backend._10_report_generator import *
 
 
 
@@ -980,6 +981,324 @@ def render_ml_recommendation():
 # ----------------------------------------
 
 
+def render_model_training():
+
+    if "ml_config" not in st.session_state:
+        st.warning("Please complete ML Recommendation phase first.")
+        return
+
+    config = st.session_state.ml_config
+    df = st.session_state.df
+
+    st.info(f"Problem Type: {config['problem_type']}")
+    st.write(f"Target Variable: {config['target']}")
+    st.write(f"Selected Models: {config['models']}")
+
+    test_size = st.slider("Test Size", 0.1, 0.4, 0.2)
+
+    if st.button("Train Selected Models"):
+
+        if not config["models"]:
+            st.warning("Please select at least one model.")
+            return
+
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+
+        start_total = time.time()
+
+        trained_models = {}
+        predictions = {}
+        training_times = {}
+
+        models = config["models"].copy()
+        total_models = len(models)
+
+        for i, model_name in enumerate(models):
+
+            status_text.text(f"Training {model_name}...")
+
+            single_config = {
+                "problem_type": config["problem_type"],
+                "target": config["target"],
+                "models": [model_name]
+            }
+
+            result = train_models(
+                df,
+                config["target"],
+                config["problem_type"],
+                [model_name],
+                test_size
+            )
+
+            (
+                tm,
+                preds,
+                X_test,
+                y_test,
+                X_processed,
+                y_processed,
+                dropped_rows,
+                model_times,
+                _
+            ) = result
+
+            trained_models.update(tm)
+            predictions.update(preds)
+            training_times.update(model_times)
+
+            progress_bar.progress((i + 1) / total_models)
+
+        end_total = time.time()
+        total_time = round(end_total - start_total, 2)
+
+        st.session_state.trained_models = trained_models
+        st.session_state.predictions = predictions
+        st.session_state.X_test = X_test
+        st.session_state.y_test = y_test
+        st.session_state.X_processed = X_processed
+        st.session_state.y_processed = y_processed
+
+        status_text.text("Training completed.")
+
+        st.success("Models trained successfully!")
+
+        st.subheader("Training Time Summary")
+
+        for model, t in training_times.items():
+            st.write(f"{model}: {t} seconds")
+
+        st.write(f"Total Training Time: {total_time} seconds")
+
+        st.subheader("Prediction Preview")
+
+        for model_name, preds in predictions.items():
+            st.write(f"Model: {model_name}")
+            st.write(preds[:10])
+
+# -------------------------
+# model evaluation function
+# -------------------------
+def render_model_evaluation():
+
+    if "trained_models" not in st.session_state:
+        st.warning("Please complete Model Training phase first.")
+        return
+
+    config = st.session_state.ml_config
+    trained_models = st.session_state.trained_models
+    predictions = st.session_state.predictions
+    X_test = st.session_state.X_test
+    y_test = st.session_state.y_test
+
+    st.info(f"Problem Type: {config['problem_type']}")
+
+    # =====================================================
+    # 1️⃣ Model Comparison Table
+    # =====================================================
+    st.subheader("Model Comparison")
+
+    results_df = evaluate_models(
+        config["problem_type"],
+        trained_models,
+        predictions,
+        y_test
+    )
+    st.session_state.evaluation_results = results_df
+
+    st.dataframe(results_df)
+
+    csv = results_df.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        "Download Evaluation Results",
+        data=csv,
+        file_name="model_evaluation.csv",
+        mime="text/csv"
+    )
+
+    # =====================================================
+    # 2️⃣ Detailed Analysis
+    # =====================================================
+    selected_model = st.selectbox(
+        "Select Model for Detailed Analysis",
+        list(trained_models.keys())
+    )
+
+    model = trained_models[selected_model]
+    preds = predictions[selected_model]
+
+    if config["problem_type"] == "Classification":
+
+        if st.checkbox("Show Confusion Matrix"):
+            fig = plot_confusion_matrix(y_test, preds)
+            st.pyplot(fig)
+
+        if st.checkbox("Show ROC Curve"):
+            if not hasattr(model, "predict_proba"):
+                st.warning("ROC curve not supported for this model.")
+            else:
+                fig = plot_roc_curve(model, X_test, y_test)
+                st.pyplot(fig)
+    else:
+
+        if st.checkbox("Show Residual Plot"):
+            fig = plot_residuals(y_test, preds)
+            st.pyplot(fig)
+
+    # =====================================================
+    # 3️⃣ Cross Validation
+    # =====================================================
+    if st.checkbox("Perform Cross Validation"):
+
+        X_full = st.session_state.X_processed
+        y_full = st.session_state.y_processed
+
+        cv_score = perform_cross_validation(
+            config["problem_type"],
+            model,
+            X_full,
+            y_full
+        )
+
+        st.success(f"Cross Validation Score: {cv_score}")
+
+# ------------------------------------
+# explainability and insights function
+# ------------------------------------
+def render_explainability():
+
+    if "trained_models" not in st.session_state:
+        st.warning("Please complete Model Training first.")
+        return
+
+    if st.session_state.X_processed is None:
+        st.warning("Please complete Model Training first.")
+        return
+
+    trained_models = st.session_state.trained_models
+    X_processed = st.session_state.X_processed
+    config = st.session_state.ml_config
+
+    st.subheader("Model Explainability & Insights")
+
+    selected_model_name = st.selectbox(
+        "Select Model",
+        list(trained_models.keys())
+    )
+
+    model = trained_models[selected_model_name]
+
+    # =====================================================
+    # Feature Importance
+    # =====================================================
+    importance_df = get_feature_importance(model, X_processed.columns)
+
+    if importance_df is not None:
+
+        st.subheader("Feature Importance")
+        st.dataframe(importance_df.head(20))
+
+        fig, ax = plt.subplots()
+        ax.barh(
+            importance_df.head(10)["Feature"],
+            importance_df.head(10)["Importance"]
+        )
+        ax.invert_yaxis()
+        st.pyplot(fig)
+
+        insight_text = generate_insights(importance_df, config["problem_type"])
+        st.info(insight_text)
+
+    # =====================================================
+    # Linear Coefficients
+    # =====================================================
+    coef_df = get_coefficients(model, X_processed.columns)
+
+    if coef_df is not None:
+
+        st.subheader("Coefficient Importance")
+        st.dataframe(coef_df.head(20))
+
+        fig, ax = plt.subplots()
+        ax.barh(
+            coef_df.head(10)["Feature"],
+            coef_df.head(10)["Coefficient"]
+        )
+        ax.invert_yaxis()
+        st.pyplot(fig)
+
+        insight_text = generate_insights(coef_df, config["problem_type"])
+        st.info(insight_text)
+
+    # =====================================================
+    # SHAP (Optional)
+    # =====================================================
+    if hasattr(model, "feature_importances_"):
+
+        if st.checkbox("Generate SHAP Summary (May take time)"):
+
+            # Sample for performance
+            X_sample = X_processed.sample(
+                min(2000, len(X_processed)),
+                random_state=42
+            )
+
+            with st.spinner("Generating SHAP explanation..."):
+                fig = generate_shap_summary(model, X_sample)
+
+            st.pyplot(fig)
+
+# --------------------------------
+# final report generation function
+# --------------------------------
+def render_final_report():
+
+    if st.session_state.evaluation_results is None:
+        st.warning("Please complete Model Evaluation first.")
+        return
+
+    df = st.session_state.df
+    evaluation_df = st.session_state.evaluation_results
+    config = st.session_state.ml_config
+    trained_models = st.session_state.trained_models
+    X_test = st.session_state.X_test
+    y_test = st.session_state.y_test
+
+    dataset_name = st.session_state.uploaded_file.name
+
+    if st.button("Generate Enterprise Report"):
+
+        file_path = "SmartEDA_Enterprise_Report.pdf"
+
+        overview = {
+            "rows": df.shape[0],
+            "columns": df.shape[1],
+            "quality_score": get_basic_overview(df)["quality_score"]
+        }
+
+        generate_final_report(
+            file_path,
+            dataset_name,
+            df,
+            overview,
+            evaluation_df,
+            config["problem_type"],
+            trained_models,
+            X_test,
+            y_test
+        )
+
+        with open(file_path, "rb") as f:
+            st.download_button(
+                "Download Enterprise Report",
+                f,
+                file_name="SmartEDA_Enterprise_Report.pdf",
+                mime="application/pdf"
+            )
+
+        st.success("Enterprise multi-page report generated successfully.")
+
 #-----------------------------------
 # Function to render section content
 #-----------------------------------
@@ -993,10 +1312,10 @@ def render_section_content(section_name):
         "⚙️ Feature Engineering":render_feature_engineering ,
         "💾 Save Processed Dataset & Download":render_save_processed_dataset,
         "🤖 Guided Machine Learning Recommendation":render_ml_recommendation,
-        # "🎯 Model Training & Prediction":,
-        # "📈 Model Evaluation":,
-        # "💡 Explainability & Insights":,
-        # "📋 Report Generation":
+        "🎯 Model Training & Prediction":render_model_training,
+        "📈 Model Evaluation":render_model_evaluation,
+        "💡 Explainability & Insights":render_explainability,
+        "📋 Report Generation":render_final_report
     }
 
     selected_function = SECTION_FUNCTIONS.get(section_name)
