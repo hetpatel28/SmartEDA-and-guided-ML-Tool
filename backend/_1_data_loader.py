@@ -9,7 +9,6 @@ def get_basic_overview(df: pd.DataFrame) -> dict:
 
     missing_ratio = (missing_cells / total_cells) * 100
     duplicate_ratio = (duplicate_rows / df.shape[0]) * 100
-
     score = 100 - ((missing_ratio * 0.5) + (duplicate_ratio * 0.5))
 
     return {
@@ -26,23 +25,19 @@ def get_data_preview(df: pd.DataFrame, rows: int = 5) -> pd.DataFrame:
 
 
 def get_attribute_info(df: pd.DataFrame) -> pd.DataFrame:
-    
     info_df = pd.DataFrame({
         "Column Name": df.columns,
         "Data Type": df.dtypes.astype(str).values
     })
-
     return info_df
 
 
 def get_descriptive_statistics(df: pd.DataFrame) -> pd.DataFrame:
-
     return df.describe().T
 
 
 def get_categorical_value_counts(df: pd.DataFrame) -> dict:
     categorical_columns = df.select_dtypes(include=["object", "category"]).columns
-
     result = {}
 
     for col in categorical_columns:
@@ -54,9 +49,7 @@ def get_categorical_value_counts(df: pd.DataFrame) -> dict:
             "Count": counts.values,
             "Percentage": percentages.round(2).values
         })
-
         result[col] = value_count_df
-
     return result
 
 def suggest_categorical_columns(df, threshold=20):
@@ -71,7 +64,6 @@ def suggest_categorical_columns(df, threshold=20):
                 "unique_count": unique_count,
                 "current_dtype": str(df[col].dtype)
             })
-
     return suggested_columns
 
 def get_full_report(df):

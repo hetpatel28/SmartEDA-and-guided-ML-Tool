@@ -19,7 +19,6 @@ from backend._9_explainability import *
 from backend._10_report_generator import *
 
 
-
 st.set_page_config(page_title="📊 SmartEDA", layout="wide")
 
 st.markdown("<h1 style='text-align:center;color:#42A5EB;'>📊 SmartEDA</h1>", unsafe_allow_html=True)
@@ -80,7 +79,7 @@ def get_sample_df(df, max_rows=5000):
 def render_data_preview():
     df = st.session_state.df
 
-    # Basic Overview (Always Visible)
+    # Basic Overview 
     overview = get_basic_overview(df)
 
     col1, col2, col3, col4, col5 = st.columns(5)
