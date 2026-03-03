@@ -1,12 +1,5 @@
-import pandas as pd
-
-
-# =====================================================
-# 1️⃣ DETECT PROBLEM TYPE
-# =====================================================
-
+# 1 DETECT PROBLEM TYPE
 def detect_problem_type(df, target):
-
     unique_values = df[target].nunique()
 
     if df[target].dtype in ["object", "category"]:
@@ -19,12 +12,8 @@ def detect_problem_type(df, target):
     return "Regression"
 
 
-# =====================================================
-# 2️⃣ SUGGEST MODELS
-# =====================================================
-
+# 2 SUGGEST MODELS
 def suggest_models(problem_type):
-
     if problem_type == "Classification":
         return [
             "Logistic Regression",
@@ -43,12 +32,8 @@ def suggest_models(problem_type):
         ]
 
 
-# =====================================================
-# 3️⃣ SUGGEST METRICS
-# =====================================================
-
+# 3 SUGGEST METRICS
 def suggest_metrics(problem_type):
-
     if problem_type == "Classification":
         return [
             "Accuracy",

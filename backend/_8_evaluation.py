@@ -11,19 +11,12 @@ from sklearn.model_selection import cross_val_score
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-
-# =====================================================
-# 1️⃣ Evaluate Models
-# =====================================================
-
+# 1 Evaluate Models
 def evaluate_models(problem_type, trained_models, predictions, y_test):
-
     results = []
 
     for name, preds in predictions.items():
-
         if problem_type == "Classification":
-
             acc = accuracy_score(y_test, preds)
             prec = precision_score(y_test, preds, average="weighted", zero_division=0)
             rec = recall_score(y_test, preds, average="weighted", zero_division=0)
@@ -38,7 +31,6 @@ def evaluate_models(problem_type, trained_models, predictions, y_test):
             })
 
         else:
-
             mae = mean_absolute_error(y_test, preds)
             mse = mean_squared_error(y_test, preds)
             rmse = np.sqrt(mse)
@@ -55,10 +47,7 @@ def evaluate_models(problem_type, trained_models, predictions, y_test):
     return pd.DataFrame(results)
 
 
-# =====================================================
-# 2️⃣ Cross Validation
-# =====================================================
-
+# 2 Cross Validation
 def perform_cross_validation(problem_type, model, X, y):
 
     if problem_type == "Classification":
@@ -69,12 +58,8 @@ def perform_cross_validation(problem_type, model, X, y):
     return round(scores.mean(), 4)
 
 
-# =====================================================
-# 3️⃣ Confusion Matrix Plot
-# =====================================================
-
+# 3 Confusion Matrix Plot
 def plot_confusion_matrix(y_test, preds):
-
     cm = confusion_matrix(y_test, preds)
     fig, ax = plt.subplots()
 
@@ -86,10 +71,7 @@ def plot_confusion_matrix(y_test, preds):
     return fig
 
 
-# =====================================================
-# 4️⃣ ROC Curve
-# =====================================================
-
+# 4 ROC Curve
 from sklearn.metrics import roc_curve, auc
 from sklearn.preprocessing import label_binarize
 import numpy as np
@@ -100,11 +82,8 @@ def plot_roc_curve(model, X_test, y_test):
 
     n_classes = len(np.unique(y_test))
 
-    # ===============================
     # Binary Classification
-    # ===============================
     if n_classes == 2:
-
         y_score = model.predict_proba(X_test)[:, 1]
 
         fpr, tpr, _ = roc_curve(y_test, y_score)
@@ -119,11 +98,8 @@ def plot_roc_curve(model, X_test, y_test):
         plt.legend()
         return plt.gcf()
 
-    # ===============================
     # Multiclass Classification
-    # ===============================
     else:
-
         classes = np.unique(y_test)
         y_test_bin = label_binarize(y_test, classes=classes)
         y_score = model.predict_proba(X_test)
@@ -143,12 +119,8 @@ def plot_roc_curve(model, X_test, y_test):
 
         return plt.gcf()
 
-# =====================================================
-# 5️⃣ Residual Plot (Regression)
-# =====================================================
-
+# 5 Residual Plot (Regression)
 def plot_residuals(y_test, preds):
-
     residuals = y_test - preds
 
     fig, ax = plt.subplots()

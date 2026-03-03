@@ -3,12 +3,8 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler
 
 
-# =====================================================
-# 1️⃣ CREATE NEW FEATURE
-# =====================================================
-
+# 1 CREATE NEW FEATURE
 def create_feature(df, col1, col2, operation, new_name):
-
     if new_name in df.columns:
         return df, False
 
@@ -27,10 +23,7 @@ def create_feature(df, col1, col2, operation, new_name):
     return df, True
 
 
-# =====================================================
-# 2️⃣ SKEW TRANSFORMATION
-# =====================================================
-
+# 2 SKEW TRANSFORMATION
 def transform_skew(df, column, method):
 
     if method == "Log":
@@ -41,17 +34,12 @@ def transform_skew(df, column, method):
     return df, True
 
 
-# =====================================================
-# 3️⃣ ENCODING
-# =====================================================
-
+# 3 ENCODING
 def label_encode(df, columns):
-
     if not columns:
         return df, False
 
     le = LabelEncoder()
-
     for col in columns:
         df[col] = le.fit_transform(df[col].astype(str))
 
@@ -59,7 +47,6 @@ def label_encode(df, columns):
 
 
 def one_hot_encode(df, columns):
-
     if not columns:
         return df, False
 
@@ -67,12 +54,8 @@ def one_hot_encode(df, columns):
     return df, True
 
 
-# =====================================================
-# 4️⃣ BINNING
-# =====================================================
-
+# 4 BINNING
 def bin_continuous(df, column, bins, method):
-
     new_col = column + "_binned"
 
     if new_col in df.columns:
@@ -86,12 +69,8 @@ def bin_continuous(df, column, bins, method):
     return df, True
 
 
-# =====================================================
-# 5️⃣ SCALING
-# =====================================================
-
+# 5 SCALING
 def scale_features(df, columns, method):
-
     if not columns:
         return df, False
 
@@ -105,10 +84,7 @@ def scale_features(df, columns, method):
     return df, True
 
 
-# =====================================================
-# 6️⃣ REMOVE HIGH CORRELATION
-# =====================================================
-
+# 6 REMOVE HIGH CORRELATION
 def remove_high_correlation(df, threshold=0.9):
 
     numeric_df = df.select_dtypes(include=["int64", "float64"])
@@ -128,12 +104,8 @@ def remove_high_correlation(df, threshold=0.9):
     return df, to_drop
 
 
-# =====================================================
-# 7️⃣ REMOVE LOW VARIANCE
-# =====================================================
-
+# 7 REMOVE LOW VARIANCE
 def remove_low_variance(df, threshold=0.01):
-
     numeric_df = df.select_dtypes(include=["int64", "float64"])
     variances = numeric_df.var()
 

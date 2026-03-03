@@ -16,9 +16,7 @@ from datetime import datetime
 from sklearn.metrics import confusion_matrix
 
 
-# =====================================================
 # STYLING
-# =====================================================
 def get_custom_styles():
     styles = getSampleStyleSheet()
 
@@ -33,11 +31,8 @@ def get_custom_styles():
     return styles, custom_heading
 
 
-# =====================================================
 # PERFORMANCE GRAPH
-# =====================================================
 def generate_performance_graph(evaluation_df, problem_type, file_path):
-
     plt.figure(figsize=(6,4))
 
     if problem_type == "Regression":
@@ -54,11 +49,8 @@ def generate_performance_graph(evaluation_df, problem_type, file_path):
     plt.close()
 
 
-# =====================================================
 # DATASET DISTRIBUTION CHART
-# =====================================================
 def generate_dataset_chart(df, file_path):
-
     numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns[:3]
 
     if len(numeric_cols) == 0:
@@ -77,11 +69,8 @@ def generate_dataset_chart(df, file_path):
     return file_path
 
 
-# =====================================================
 # CONFUSION MATRIX
-# =====================================================
 def generate_confusion_matrix_plot(model, X_test, y_test, file_path):
-
     y_pred = model.predict(X_test)
     cm = confusion_matrix(y_test, y_pred)
 
@@ -93,11 +82,8 @@ def generate_confusion_matrix_plot(model, X_test, y_test, file_path):
     plt.close()
 
 
-# =====================================================
 # SHAP PLOT
-# =====================================================
 def generate_shap_plot(model, X_test, file_path):
-
     try:
         X_sample = X_test.sample(min(200, len(X_test)), random_state=42)
         explainer = shap.Explainer(model, X_sample)
@@ -112,11 +98,8 @@ def generate_shap_plot(model, X_test, file_path):
         return False
 
 
-# =====================================================
 # AUTO INSIGHTS
-# =====================================================
 def generate_model_insights(evaluation_df, problem_type):
-
     insights = []
 
     for _, row in evaluation_df.iterrows():
@@ -144,9 +127,7 @@ def generate_model_insights(evaluation_df, problem_type):
     return insights
 
 
-# =====================================================
 # FINAL MULTI-PAGE REPORT
-# =====================================================
 def generate_final_report(
     file_path,
     dataset_name,
@@ -176,9 +157,7 @@ def generate_final_report(
     best_score = best_row[metric]
     best_model_obj = trained_models[best_model_name]
 
-    # =====================================================
     # PAGE 1 — EXECUTIVE SUMMARY
-    # =====================================================
     elements.append(Paragraph("SmartEDA Professional ML Report", styles["Title"]))
     elements.append(Spacer(1, 0.3 * inch))
     elements.append(HRFlowable(width="100%", thickness=1, color=colors.grey))
@@ -194,13 +173,11 @@ def generate_final_report(
         f"Best Model: {best_model_name}<br/>"
         f"Best {metric}: {round(best_score,4)}"
     )
-
     elements.append(Paragraph(summary_text, styles["Normal"]))
     elements.append(PageBreak())
 
-    # =====================================================
+
     # PAGE 2 — DATASET ANALYSIS
-    # =====================================================
     elements.append(Paragraph("2. Dataset Analysis", custom_heading))
 
     dataset_chart_path = "dataset_chart.png"
@@ -209,9 +186,8 @@ def generate_final_report(
 
     elements.append(PageBreak())
 
-    # =====================================================
+
     # PAGE 3 — MODEL EVALUATION
-    # =====================================================
     elements.append(Paragraph("3. Model Evaluation", custom_heading))
 
     eval_data = [evaluation_df.columns.tolist()] + evaluation_df.values.tolist()
@@ -231,9 +207,8 @@ def generate_final_report(
 
     elements.append(PageBreak())
 
-    # =====================================================
+
     # PAGE 4 — MODEL INSIGHTS
-    # =====================================================
     elements.append(Paragraph("4. Model Insights", custom_heading))
 
     insights = generate_model_insights(evaluation_df, problem_type)
@@ -243,9 +218,8 @@ def generate_final_report(
 
     elements.append(PageBreak())
 
-    # =====================================================
+
     # PAGE 5 — CONFUSION MATRIX (Classification Only)
-    # =====================================================
     if problem_type != "Regression":
         elements.append(Paragraph("5. Confusion Matrix", custom_heading))
 
@@ -255,9 +229,8 @@ def generate_final_report(
 
         elements.append(PageBreak())
 
-    # =====================================================
+
     # PAGE 6 — SHAP EXPLAINABILITY
-    # =====================================================
     elements.append(Paragraph("6. SHAP Explainability", custom_heading))
 
     shap_path = "shap_plot.png"

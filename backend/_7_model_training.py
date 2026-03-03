@@ -19,33 +19,24 @@ from sklearn.neighbors import KNeighborsClassifier
 
 
 def train_models(df, target, problem_type, selected_models, test_size=0.2):
-
     df_copy = df.copy()
 
-    # ============================================
-    # 1️⃣ Drop rows with missing target
-    # ============================================
+    # 1 Drop rows with missing target
     initial_rows = len(df_copy)
     df_copy = df_copy.dropna(subset=[target])
     dropped_rows = initial_rows - len(df_copy)
 
-    # ============================================
-    # 2️⃣ Encode target if classification
-    # ============================================
+    # 2 Encode target if classification
     if problem_type == "Classification":
         if df_copy[target].dtype in ["object", "category"]:
             le = LabelEncoder()
             df_copy[target] = le.fit_transform(df_copy[target])
 
-    # ============================================
-    # 3️⃣ Split X and y
-    # ============================================
+    # 3 Split X and y
     X = df_copy.drop(columns=[target])
     y = df_copy[target]
 
-    # ============================================
-    # 4️⃣ Auto sample large dataset
-    # ============================================
+    # 4 Auto sample large dataset
     MAX_ROWS = 120000
     if len(X) > MAX_ROWS:
         sampled = df_copy.sample(MAX_ROWS, random_state=42)
@@ -54,15 +45,11 @@ def train_models(df, target, problem_type, selected_models, test_size=0.2):
 
     rows = len(X)
 
-    # ============================================
-    # 5️⃣ Safe categorical handling (Memory Safe)
-    # ============================================
-
+    # 5 Safe categorical handling (Memory Safe)
     categorical_cols = X.select_dtypes(include=["object", "category"]).columns
     rows = len(X)
 
     for col in categorical_cols:
-
         unique_count = X[col].nunique()
 
         # If too many categories → label encode only
@@ -80,10 +67,8 @@ def train_models(df, target, problem_type, selected_models, test_size=0.2):
             else:
                 le = LabelEncoder()
                 X[col] = le.fit_transform(X[col].astype(str))
-    # ============================================
-    # Convert to float32 (Memory Optimization)
-    # ============================================
 
+    # Convert to float32 (Memory Optimization)
     for col in X.select_dtypes(include=["float64"]).columns:
         X[col] = X[col].astype("float32")
 
@@ -91,17 +76,13 @@ def train_models(df, target, problem_type, selected_models, test_size=0.2):
         X[col] = X[col].astype("int32")
     
 
-    # ============================================
-    # 6️⃣ Prevent feature explosion
-    # ============================================
+    # 6 Prevent feature explosion
     MAX_FEATURES = 2000
     if X.shape[1] > MAX_FEATURES:
         X = X.select_dtypes(include=["int64", "float64"])
         X = X.iloc[:, :MAX_FEATURES]
 
-    # ============================================
-    # 7️⃣ Handle missing values
-    # ============================================
+    # 7 Handle missing values
     numeric_cols = X.select_dtypes(include=["int64", "float64"]).columns
     if len(numeric_cols) > 0:
         imputer = SimpleImputer(strategy="median")
@@ -109,9 +90,7 @@ def train_models(df, target, problem_type, selected_models, test_size=0.2):
 
     X = X.fillna(0)
 
-    # ============================================
-    # 8️⃣ Train/Test split
-    # ============================================
+    # 8 Train/Test split
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=test_size, random_state=42
     )
@@ -120,9 +99,7 @@ def train_models(df, target, problem_type, selected_models, test_size=0.2):
     predictions = {}
     training_times = {}
 
-    # ============================================
-    # 9️⃣ Disable heavy models for large datasets
-    # ============================================
+    # 9 Disable heavy models for large datasets
     if rows > 80000:
         if "Support Vector Machine" in selected_models:
             selected_models.remove("Support Vector Machine")
@@ -130,11 +107,8 @@ def train_models(df, target, problem_type, selected_models, test_size=0.2):
         if "K-Nearest Neighbors" in selected_models:
             selected_models.remove("K-Nearest Neighbors")
 
-    # ============================================
-    # 🔟 Optimized Model Training
-    # ============================================
+    # 10 Optimized Model Training
     for model_name in selected_models:
-
         start_time = time.time()
 
         if problem_type == "Classification":

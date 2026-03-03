@@ -4,30 +4,20 @@ import matplotlib.pyplot as plt
 import shap
 
 
-# =====================================================
-# 1️⃣ Feature Importance (Tree Models)
-# =====================================================
-
+# 1 Feature Importance (Tree Models)
 def get_feature_importance(model, feature_names):
-
     if hasattr(model, "feature_importances_"):
         importances = model.feature_importances_
         df = pd.DataFrame({
             "Feature": feature_names,
             "Importance": importances
         }).sort_values(by="Importance", ascending=False)
-
         return df
-
     return None
 
 
-# =====================================================
-# 2️⃣ Coefficient Importance (Linear Models)
-# =====================================================
-
+# 2 Coefficient Importance (Linear Models)
 def get_coefficients(model, feature_names):
-
     if hasattr(model, "coef_"):
         coefs = model.coef_
 
@@ -38,33 +28,22 @@ def get_coefficients(model, feature_names):
             "Feature": feature_names,
             "Coefficient": coefs
         }).sort_values(by="Coefficient", key=abs, ascending=False)
-
         return df
-
     return None
 
 
-# =====================================================
-# 3️⃣ SHAP Explanation (Tree Models Only)
-# =====================================================
-
+# 3 SHAP Explanation (Tree Models Only)
 def generate_shap_summary(model, X_sample):
-
     explainer = shap.Explainer(model)
     shap_values = explainer(X_sample)
 
     fig = plt.figure()
     shap.summary_plot(shap_values, X_sample, show=False)
-
     return fig
 
 
-# =====================================================
-# 4️⃣ Human-Readable Insights
-# =====================================================
-
+# 4 Human-Readable Insights
 def generate_insights(importance_df, problem_type):
-
     top_features = importance_df.head(3)["Feature"].tolist()
 
     if problem_type == "Regression":

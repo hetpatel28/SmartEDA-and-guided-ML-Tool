@@ -168,19 +168,14 @@ def render_data_cleaning():
 
     df = st.session_state.df
 
-    # ==============================
     # Data Version + Quality Score
-    # ==============================
     st.info(f"Current Data Version: v{st.session_state.data_version}")
 
     overview = get_basic_overview(df)
     st.metric("Data Quality Score", f'{overview["quality_score"]}%')
 
-    # ==============================
     # Undo / Redo / Reset Controls
-    # ==============================
     col1, col2, col3 = st.columns(3)
-
     with col1:
         if st.button("Undo Last Action"):
             if st.session_state.df_history:
@@ -217,9 +212,7 @@ def render_data_cleaning():
             log_action("Dataset reset to original upload")
             st.success("Dataset reset successfully.")
 
-    # ==============================
     # Cleaning Options
-    # ==============================
     cleaning_option = st.selectbox(
         "Select Inspection Action",
         [
@@ -232,11 +225,8 @@ def render_data_cleaning():
         ]
     )
 
-    # =====================================================
-    # 1️⃣ Missing Values
-    # =====================================================
+    # 1 Missing Values
     if cleaning_option == "Missing Value Analysis":
-
         st.dataframe(get_missing_summary(df))
 
         if st.checkbox("Show Missing Heatmap"):
@@ -278,9 +268,7 @@ def render_data_cleaning():
 
             st.success("Missing values handled successfully.")
 
-    # =====================================================
-    # 2️⃣ Duplicate Analysis
-    # =====================================================
+    # 2 Duplicate Analysis
     elif cleaning_option == "Duplicate Analysis":
 
         duplicate_count, duplicate_pct = get_duplicate_summary(df)
@@ -299,9 +287,7 @@ def render_data_cleaning():
 
             st.success("Duplicates removed successfully.")
 
-    # =====================================================
-    # 3️⃣ Outlier Detection
-    # =====================================================
+    # 3 Outlier Detection
     elif cleaning_option == "Outlier Detection":
 
         numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns
@@ -345,9 +331,7 @@ def render_data_cleaning():
 
             st.success("Outliers handled successfully.")
 
-    # =====================================================
-    # 4️⃣ Constant Column Detection
-    # =====================================================
+    # 4 Constant Column Detection
     elif cleaning_option == "Constant Column Detection":
 
         constant_cols = detect_constant_columns(df)
@@ -370,9 +354,7 @@ def render_data_cleaning():
         else:
             st.success("No constant columns found.")
 
-    # =====================================================
-    # 5️⃣ High Cardinality
-    # =====================================================
+    # 5 High Cardinality
     elif cleaning_option == "High Cardinality Check":
 
         high_card_cols = detect_high_cardinality(df)
@@ -383,9 +365,7 @@ def render_data_cleaning():
         else:
             st.success("No high cardinality columns found.")
 
-    # =====================================================
-    # 6️⃣ Data Type Review
-    # =====================================================
+    # 6 Data Type Review
     elif cleaning_option == "Data Type Review":
 
         mismatches = detect_dtype_mismatch(df)
@@ -396,9 +376,7 @@ def render_data_cleaning():
         else:
             st.success("No data type mismatch found.")
 
-    # ==============================
     # Change Log Panel
-    # ==============================
     st.divider()
     st.subheader("Change Log")
 
@@ -423,7 +401,6 @@ def render_data_cleaning():
 # pattern and relationship discovery function
 # ------------------------------------------
 def render_pattern_discovery():
-
     df = st.session_state.df
 
     analysis_type = st.selectbox(
@@ -438,9 +415,7 @@ def render_pattern_discovery():
         ]
     )
 
-    # =====================================================
-    # 1️⃣ UNIVARIATE
-    # =====================================================
+    # 1 UNIVARIATE
     if analysis_type == "Univariate Analysis":
 
         column = st.selectbox("Select Column", df.columns)
@@ -459,9 +434,7 @@ def render_pattern_discovery():
             mime="image/png"
         )
 
-        # =====================================================
-        # 2️⃣ BIVARIATE
-        # =====================================================
+    # 2 BIVARIATE
     elif analysis_type == "Bivariate Analysis":
 
         col1 = st.selectbox("Select First Column", df.columns)
@@ -472,9 +445,7 @@ def render_pattern_discovery():
 
         df_sample = get_sample_df(df)
 
-        # =====================================================
         # CASE 1: Numeric - Numeric
-        # =====================================================
         if dtype1 in ["int64", "float64"] and dtype2 in ["int64", "float64"]:
 
             with st.spinner("Generating scatter plot..."):
@@ -488,9 +459,7 @@ def render_pattern_discovery():
                 mime="image/png"
             )
 
-            # =====================================================
-            # CASE 2: Categorical - Numeric
-            # =====================================================
+        # CASE 2: Categorical - Numeric
         elif (dtype1 == "object" and dtype2 in ["int64", "float64"]) or \
             (dtype2 == "object" and dtype1 in ["int64", "float64"]):
 
@@ -517,9 +486,7 @@ def render_pattern_discovery():
                     mime="image/png"
                 )
 
-            # =====================================================
-            # CASE 3: Categorical - Categorical
-            # =====================================================
+        # CASE 3: Categorical - Categorical
         else:
 
             unique1 = df[col1].nunique()
@@ -551,9 +518,7 @@ def render_pattern_discovery():
                     mime="image/png"
                 )
 
-    # =====================================================
-    # 3️⃣ CORRELATION HEATMAP
-    # =====================================================
+    # 3 CORRELATION HEATMAP
     elif analysis_type == "Correlation Heatmap":
 
         fig = correlation_heatmap(df)
@@ -566,9 +531,7 @@ def render_pattern_discovery():
             mime="image/png"
         )
 
-    # =====================================================
-    # 4️⃣ TARGET BASED ANALYSIS
-    # =====================================================
+    # 4 TARGET BASED ANALYSIS
     elif analysis_type == "Target-Based Analysis":
 
         target = st.selectbox("Select Target Column", df.columns)
@@ -581,9 +544,7 @@ def render_pattern_discovery():
         grouped = target_group_analysis(df, target, feature)
         st.dataframe(grouped)
 
-    # =====================================================
-    # 5️⃣ STRONG RELATIONSHIP
-    # =====================================================
+    # 5 STRONG RELATIONSHIP
     elif analysis_type == "Strong Relationship Detector":
 
         threshold = st.slider("Correlation Threshold", 0.5, 1.0, 0.8)
@@ -595,9 +556,7 @@ def render_pattern_discovery():
         else:
             st.info("No strong correlations found.")
 
-    # =====================================================
-    # 6️⃣ PAIRPLOT
-    # =====================================================
+    # 6 PAIRPLOT
     elif analysis_type == "Pairplot (Limited Columns)":
 
         numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns
@@ -619,19 +578,15 @@ def render_pattern_discovery():
 # ----------------------------
 def render_feature_engineering():
 
-    # if not isinstance(st.session_state.df, pd.DataFrame):
-    #     st.error("Dataset corrupted. Please reset to original.")
-    #     return
+    if not isinstance(st.session_state.df, pd.DataFrame):
+        st.error("Dataset corrupted. Please reset to original.")
+        return
 
     df = st.session_state.df
-
     st.info(f"Current Data Version: v{st.session_state.data_version}")
 
-    # ==============================
     # Undo / Redo / Reset Controls
-    # ==============================
     col1, col2, col3 = st.columns(3)
-
     with col1:
         if st.button("Undo Last Action"):
             if st.session_state.df_history:
@@ -680,9 +635,7 @@ def render_feature_engineering():
         ]
     )
 
-    # =====================================================
-    # 1️⃣ CREATE FEATURE
-    # =====================================================
+    # 1 CREATE FEATURE
     if task == "Create New Feature":
 
         numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns
@@ -707,9 +660,7 @@ def render_feature_engineering():
             else:
                 st.warning("Feature not created (name exists or invalid).")
 
-    # =====================================================
-    # 2️⃣ SKEW TRANSFORMATION
-    # =====================================================
+    # 2 SKEW TRANSFORMATION
     elif task == "Transform Skewed Data":
 
         numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns
@@ -732,9 +683,7 @@ def render_feature_engineering():
             else:
                 st.info("No transformation applied.")
 
-    # =====================================================
-    # 3️⃣ ENCODING
-    # =====================================================
+    # 3 ENCODING
     elif task == "Encode Categorical Variables":
 
         cat_cols = df.select_dtypes(include=["object", "category"]).columns
@@ -760,9 +709,7 @@ def render_feature_engineering():
             else:
                 st.info("No encoding applied.")
 
-    # =====================================================
     # 4️⃣ BINNING
-    # =====================================================
     elif task == "Bin Continuous Variable":
 
         numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns
@@ -786,9 +733,7 @@ def render_feature_engineering():
             else:
                 st.info("Binning not applied (column may already exist).")
 
-    # =====================================================
-    # 5️⃣ SCALING
-    # =====================================================
+    # 5 SCALING
     elif task == "Scale Features":
 
         numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns
@@ -811,9 +756,7 @@ def render_feature_engineering():
             else:
                 st.info("No scaling applied.")
 
-    # =====================================================
-    # 6️⃣ REMOVE HIGH CORRELATION
-    # =====================================================
+    # 6 REMOVE HIGH CORRELATION
     elif task == "Remove Highly Correlated Features":
 
         threshold = st.slider("Correlation Threshold", 0.5, 1.0, 0.9)
@@ -834,9 +777,7 @@ def render_feature_engineering():
             else:
                 st.info("No correlated features above threshold.")
 
-    # =====================================================
-    # 7️⃣ VARIANCE THRESHOLD
-    # =====================================================
+    # 7 VARIANCE THRESHOLD
     elif task == "Remove Low Variance Features":
 
         threshold = st.number_input("Variance Threshold", value=0.01)
@@ -883,12 +824,9 @@ def render_feature_engineering():
 def render_save_processed_dataset():
 
     df = st.session_state.df
-
     st.info(f"Current Data Version: v{st.session_state.data_version}")
 
-    # ==============================
     # Dataset Summary
-    # ==============================
     st.subheader("Dataset Summary")
 
     col1, col2 = st.columns(2)
@@ -920,14 +858,10 @@ def render_save_processed_dataset():
     )
     st.divider()
 
-    # ==============================
     # File Name Input
-    # ==============================
     file_name = st.text_input("Enter File Name (without extension)", "processed_dataset")
 
-    # ==============================
     # CSV Download
-    # ==============================
     csv_data = df.to_csv(index=False).encode("utf-8")
 
     if st.download_button(
@@ -946,13 +880,10 @@ def render_save_processed_dataset():
 def render_ml_recommendation():
 
     df = st.session_state.df
-
     st.info(f"Current Data Version: v{st.session_state.data_version}")
-
     st.subheader("Step 1: Select Target Column")
 
     target = st.selectbox("Select Target Variable", df.columns)
-
     if target:
 
         # Detect problem type
@@ -998,8 +929,6 @@ def render_ml_recommendation():
 # ----------------------------------------
 # model training and prediction function
 # ----------------------------------------
-
-
 def render_model_training():
 
     if "ml_config" not in st.session_state:
@@ -1100,7 +1029,6 @@ def render_model_training():
 # model evaluation function
 # -------------------------
 def render_model_evaluation():
-
     if "trained_models" not in st.session_state:
         st.warning("Please complete Model Training phase first.")
         return
@@ -1113,9 +1041,7 @@ def render_model_evaluation():
 
     st.info(f"Problem Type: {config['problem_type']}")
 
-    # =====================================================
-    # 1️⃣ Model Comparison Table
-    # =====================================================
+    # 1 Model Comparison Table
     st.subheader("Model Comparison")
 
     results_df = evaluate_models(
@@ -1136,9 +1062,7 @@ def render_model_evaluation():
         mime="text/csv"
     )
 
-    # =====================================================
-    # 2️⃣ Detailed Analysis
-    # =====================================================
+    # 2 Detailed Analysis
     selected_model = st.selectbox(
         "Select Model for Detailed Analysis",
         list(trained_models.keys())
@@ -1165,11 +1089,8 @@ def render_model_evaluation():
             fig = plot_residuals(y_test, preds)
             st.pyplot(fig)
 
-    # =====================================================
-    # 3️⃣ Cross Validation
-    # =====================================================
+    # 3 Cross Validation
     if st.checkbox("Perform Cross Validation"):
-
         X_full = st.session_state.X_processed
         y_full = st.session_state.y_processed
 
@@ -1208,13 +1129,10 @@ def render_explainability():
 
     model = trained_models[selected_model_name]
 
-    # =====================================================
     # Feature Importance
-    # =====================================================
     importance_df = get_feature_importance(model, X_processed.columns)
 
     if importance_df is not None:
-
         st.subheader("Feature Importance")
         st.dataframe(importance_df.head(20))
 
@@ -1229,13 +1147,10 @@ def render_explainability():
         insight_text = generate_insights(importance_df, config["problem_type"])
         st.info(insight_text)
 
-    # =====================================================
     # Linear Coefficients
-    # =====================================================
     coef_df = get_coefficients(model, X_processed.columns)
 
     if coef_df is not None:
-
         st.subheader("Coefficient Importance")
         st.dataframe(coef_df.head(20))
 
@@ -1250,11 +1165,8 @@ def render_explainability():
         insight_text = generate_insights(coef_df, config["problem_type"])
         st.info(insight_text)
 
-    # =====================================================
-    # SHAP (Optional)
-    # =====================================================
+    # SHAP
     if hasattr(model, "feature_importances_"):
-
         if st.checkbox("Generate SHAP Summary (May take time)"):
 
             # Sample for performance
