@@ -28,16 +28,16 @@ Exports fully prepared dataset in CSV format for downstream modeling.
 Automatically detects problem type and suggests appropriate ML models and evaluation metrics.
 
 ### 🎯 Phase 7 – Model Training & Prediction  
-Will train selected models and generate predictions using train-test split.
+train selected models and generate predictions using train-test split.
 
 ### 📈 Phase 8 – Model Evaluation 
-Will compare model performance using metrics and cross-validation.
+compare model performance using metrics and cross-validation.
 
 ### 💡 Phase 9 – Model Explainability
-Will provide feature importance and interpretation support.
+provide feature importance and interpretation support.
 
 ### 📋 Phase 10 – Final Report Generation  
-Will generate a structured ML summary report for project documentation.
+generate a structured ML summary report for project documentation.
 
 ---
 
