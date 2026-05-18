@@ -709,7 +709,7 @@ def render_feature_engineering():
             else:
                 st.info("No encoding applied.")
 
-    # 4️⃣ BINNING
+    # 4 BINNING
     elif task == "Bin Continuous Variable":
 
         numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns

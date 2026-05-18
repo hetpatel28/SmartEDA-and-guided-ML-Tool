@@ -77,7 +77,6 @@ from sklearn.preprocessing import label_binarize
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 def plot_roc_curve(model, X_test, y_test):
 
     n_classes = len(np.unique(y_test))

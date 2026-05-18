@@ -45,7 +45,7 @@ def train_models(df, target, problem_type, selected_models, test_size=0.2):
 
     rows = len(X)
 
-    # 5 Safe categorical handling (Memory Safe)
+    # 5 Safe categorical handling
     categorical_cols = X.select_dtypes(include=["object", "category"]).columns
     rows = len(X)
 
@@ -61,14 +61,13 @@ def train_models(df, target, problem_type, selected_models, test_size=0.2):
         elif unique_count <= 20:
             dummies = pd.get_dummies(X[col], prefix=col, drop_first=True)
 
-            # Prevent explosion
             if dummies.shape[1] <= 15:
                 X = pd.concat([X.drop(columns=[col]), dummies], axis=1)
             else:
                 le = LabelEncoder()
                 X[col] = le.fit_transform(X[col].astype(str))
 
-    # Convert to float32 (Memory Optimization)
+    # Convert to float32
     for col in X.select_dtypes(include=["float64"]).columns:
         X[col] = X[col].astype("float32")
 

@@ -52,6 +52,7 @@ def get_categorical_value_counts(df: pd.DataFrame) -> dict:
         result[col] = value_count_df
     return result
 
+
 def suggest_categorical_columns(df, threshold=20):
     suggested_columns = []
 
@@ -65,6 +66,7 @@ def suggest_categorical_columns(df, threshold=20):
                 "current_dtype": str(df[col].dtype)
             })
     return suggested_columns
+
 
 def get_full_report(df):
     profile = ProfileReport(df, title="YData Profiling Report", explorative=True)
