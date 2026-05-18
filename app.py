@@ -1200,7 +1200,7 @@ def render_final_report():
 
     if st.button("Generate Report"):
 
-        file_path = "SmartEDA_Report.pdf"
+        file_path = "PDFs/SmartEDA_Report.pdf"
 
         overview = {
             "rows": df.shape[0],
